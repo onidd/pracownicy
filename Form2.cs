@@ -15,7 +15,7 @@ namespace pracownicy
     {
         private string imie;
         private string nazwisko;
-        private string wiek;
+        private int wiek;
         private string stanowisko;
         private Form1 form1;
         public Form2(Form1 form1)
@@ -25,10 +25,10 @@ namespace pracownicy
         }
         private void Form2_Load(object sender, EventArgs e)
         {
-            comboBox1.Items.Add("Skiper");
-            comboBox1.Items.Add("Szerogowy");
-            comboBox1.Items.Add("Kowalski");
-            comboBox1.Items.Add("Rico");
+            comboBox1.Items.Add("Asystent");
+            comboBox1.Items.Add("Specjalista");
+            comboBox1.Items.Add("Manager");
+            comboBox1.Items.Add("Dyrektor");
         }
         private void button2_Click(object sender, EventArgs e)
         {
@@ -42,6 +42,11 @@ namespace pracownicy
             form1.wiek = wiek;
             form1.stanowisko = stanowisko;
             form1.adduser();
+
+            textBox1.Clear();
+            textBox2.Clear();
+            textBox3.Clear();
+            comboBox1.SelectedIndex = -1;
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -56,9 +61,17 @@ namespace pracownicy
 
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
-            wiek = textBox3.Text;
+            if (int.TryParse(textBox3.Text, out int result))
+            {
+                wiek = result;
+                textBox3.BackColor = Color.White;
+            }
+            else
+            {
+                textBox3.BackColor = Color.LightCoral;
+                wiek = 0;
+            }
         }
-
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
            if(comboBox1.SelectedItem != null) {

@@ -1,30 +1,75 @@
 using System.Data;
+using System.Numerics;
 using System.Windows.Forms.Design;
 
 namespace pracownicy
 {
     public partial class Form1 : Form
     {
+        private int currentID = 1;
         public string imie;
         public string nazwisko;
-        public string wiek;
+        public int wiek;
         public string stanowisko;
 
         public Form1()
         {
             InitializeComponent();
-            dataGridView1.Columns.Add("Column1", "Column1");
-            dataGridView1.Columns.Add("Column2", "Column2");
-            dataGridView1.Columns.Add("Column3", "Column3");
-            dataGridView1.Columns.Add("Column4", "Column4");
+            dataGridView1.Columns.Add("ID", "ID");
+            dataGridView1.Columns.Add("Imiê", "Imiê");
+            dataGridView1.Columns.Add("Nazwisko", "Nazwisko");
+            dataGridView1.Columns.Add("Wiek", "Wiek");
+            dataGridView1.Columns.Add("Stanowisko", "Stanowisko");
+            dataGridView1.ReadOnly = true;
             Controls.Add(dataGridView1);
         }
-        //komentarz
-        public void adduser() { 
-            dataGridView1.Rows.Add(new object[] { imie, nazwisko, wiek, stanowisko } );
+        public void adduser()
+        {
+            dataGridView1.Rows.Add(new object[] { currentID, imie, nazwisko, wiek, stanowisko });
+            currentID++;
         }
         private void button3_Click(object sender, EventArgs e)
         {
+            savetocsv();
+        }
+
+        private void savetocsv()
+        {
+            try
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "CSV files (*.csv)|*.csv",
+                    DefaultExt = "csv",
+                    FileName = "pracownicy.csv"
+                };
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    using (StreamWriter writer = new StreamWriter(saveFileDialog.FileName))
+                    {
+                        var columnNames = dataGridView1.Columns.Cast<DataGridViewColumn>()
+                                            .Select(column => column.HeaderText)
+                                            .ToArray();
+                        writer.WriteLine(string.Join(",", columnNames));
+                        foreach (DataGridViewRow row in dataGridView1.Rows)
+                        {
+                            if (!row.IsNewRow)
+                            {
+                                var cellValues = row.Cells.Cast<DataGridViewCell>()
+                                                       .Select(cell => cell.Value.ToString())
+                                                       .ToArray();
+                                writer.WriteLine(string.Join(",", cellValues));
+                            }
+                        }
+                    }
+                    MessageBox.Show("Dane zosta³y zapisane.", "Zapisano", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("B³¹d: " + ex.Message, "B³¹d", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
         }
 
@@ -44,6 +89,69 @@ namespace pracownicy
 
         }
 
-      
+        private void button2_Click(object sender, EventArgs e)
+        {
+            removeUser();
+        }
+
+        private void removeUser()
+        {
+            if (dataGridView1.SelectedRows.Count > 0)
+            {
+                foreach (DataGridViewRow row in dataGridView1.SelectedRows)
+                {
+                    if (!row.IsNewRow)
+                    {
+                        dataGridView1.Rows.Remove(row);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Wybierz wiersz do usuniêcia!", "B³¹d", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            readfromcsv();
+        }
+
+        private void readfromcsv()
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog
+                {
+                    Filter = "CSV files (*.csv)|*.csv",
+                    DefaultExt = "csv"
+                };
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    using (StreamReader reader = new StreamReader(openFileDialog.FileName))
+                    {
+                        string line;
+                        bool firstLine = true;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            if (firstLine)
+                            {
+                                firstLine = false;
+                                continue;
+                            }
+                            var values = line.Split(',');
+                            dataGridView1.Rows.Add(values);
+                        }
+                    }
+
+                    MessageBox.Show("Dane zosta³y za³adowane.", "Wczytano", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("B³¹d: " + ex.Message, "B³¹d", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
