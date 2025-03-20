@@ -19,7 +19,7 @@ namespace pracownicy
             dataGridView1.Columns.Add("Column4", "Column4");
             Controls.Add(dataGridView1);
         }
-
+        //komentarz
         public void adduser() { 
             dataGridView1.Rows.Add(new object[] { imie, nazwisko, wiek, stanowisko } );
         }
