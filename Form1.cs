@@ -1,6 +1,10 @@
 using System.Data;
 using System.Numerics;
 using System.Windows.Forms.Design;
+using System.Text.Json;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace pracownicy
 {
@@ -152,6 +156,59 @@ namespace pracownicy
             {
                 MessageBox.Show("B³¹d: " + ex.Message, "B³¹d", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            SaveToJson();
+        }
+
+        private void SaveToJson()
+        {
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "JSON files (*.json)|*.json",
+                    DefaultExt = "json",
+                    FileName = "pracownicy.json"
+                };
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var employees = new List<Employee>();
+
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    if (!row.IsNewRow)
+                    {
+                        employees.Add(new Employee
+                        {
+                            Id = Convert.ToInt32(row.Cells["ID"].Value),
+                            Name = row.Cells["Imiê"].Value.ToString(),
+                            Surname = row.Cells["Nazwisko"].Value.ToString(),
+                            Wiek = Convert.ToInt32(row.Cells["Wiek"].Value),
+                            Position = row.Cells["Stanowisko"].Value.ToString()
+                        });
+                    }
+                }
+                    var options = new JsonSerializerOptions { WriteIndented = true };
+                    string json = JsonSerializer.Serialize(employees, options); 
+                    File.WriteAllText(saveFileDialog.FileName, json);
+                   //MessageBox.Show("Dane Zosta³y Zapisane", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                } 
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        public class Employee
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string Surname { get; set; }
+            public int Wiek { get; set; }
+            public string Position { get; set; }
         }
     }
 }
