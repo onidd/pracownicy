@@ -1,6 +1,7 @@
 using System.Data;
 using System.Numerics;
 using System.Windows.Forms.Design;
+using System.Xml.Serialization;
 
 namespace pracownicy
 {
@@ -152,6 +153,85 @@ namespace pracownicy
             {
                 MessageBox.Show("B³¹d: " + ex.Message, "B³¹d", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            ReadFromXml();
+        }
+
+        private void ReadFromXml()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml",
+                DefaultExt = "xml"
+            };
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+               
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<Employee>));
+                    using (FileStream fs = new FileStream(openFileDialog.FileName, FileMode.Open))
+                    {
+                        var employees = (List<Employee>)serializer.Deserialize(fs);
+                        dataGridView1.Rows.Clear();
+
+                        foreach (var emp in employees)
+                        {
+                            dataGridView1.Rows.Add(emp.Id, emp.Name, emp.Surname, emp.Wiek, emp.Position);
+                        }
+
+                        currentID = employees.Max(e => e.Id) + 1;
+                    }
+
+                    MessageBox.Show("Dane zosta³y wczytane z pliku XML.", "Wczytano", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        private void button5_Click(object sender, EventArgs e)
+        {
+            SaveToXml();
+        }
+        private void SaveToXml()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml",
+                DefaultExt = "xml",
+                FileName = "pracownicy.xml"
+            };
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                    var employees = new List<Employee>();
+                    foreach (DataGridViewRow row in dataGridView1.Rows)
+                    {
+                        if (!row.IsNewRow)
+                        {
+                            employees.Add(new Employee
+                            {
+                                Id = Convert.ToInt32(row.Cells["ID"].Value),
+                                Name = row.Cells["Imiê"].Value.ToString(),
+                                Surname = row.Cells["Nazwisko"].Value.ToString(),
+                                Wiek = Convert.ToInt32(row.Cells["Wiek"].Value),
+                                Position = row.Cells["Stanowisko"].Value.ToString()
+                            });
+                        }
+                    }
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<Employee>));
+                    using (FileStream fs = new FileStream(saveFileDialog.FileName, FileMode.Create))
+                    {
+                        serializer.Serialize(fs, employees);
+                    }
+                    MessageBox.Show("Dane zosta³y zapisane do pliku XML.", "Zapisano", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        [Serializable]
+        public class Employee
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string Surname { get; set; }
+            public int Wiek { get; set; }
+            public string Position { get; set; }
         }
     }
 }
