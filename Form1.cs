@@ -192,15 +192,39 @@ namespace pracownicy
                     var options = new JsonSerializerOptions { WriteIndented = true };
                     string json = JsonSerializer.Serialize(employees, options); 
                     File.WriteAllText(saveFileDialog.FileName, json);
-                   //MessageBox.Show("Dane Zosta³y Zapisane", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                   MessageBox.Show("Dane Zosta³y Zapisane", "Zapisano" , MessageBoxButtons.OK, MessageBoxIcon.Information);
                 } 
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-
+            ReadFromJson();
         }
 
+        private void ReadFromJson()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json",
+                DefaultExt = "json"
+            };
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string json = File.ReadAllText(openFileDialog.FileName);
+                var employees = JsonSerializer.Deserialize<List<Employee>>(json);
+
+                dataGridView1.Rows.Clear();
+
+                foreach (var emp in employees)
+                {
+                    dataGridView1.Rows.Add(emp.Id, emp.Name, emp.Surname, emp.Wiek, emp.Position);
+                }
+
+                currentID = employees.Max(e => e.Id) + 1;
+                MessageBox.Show("Dane zosta³y wczytane z pliku JSON.", "Wczytano", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+    }
 
         public class Employee
         {
@@ -211,4 +235,4 @@ namespace pracownicy
             public string Position { get; set; }
         }
     }
-}
+
